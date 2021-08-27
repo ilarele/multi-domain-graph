@@ -45,14 +45,15 @@ class MultiDomainGraph:
                         bs_test = 60
                         bs_train = 60
                     else:
-                        bs_test = 55
-                        bs_train = 40
+                        bs_test = 5  #20  #55
+                        bs_train = 5  #20  #40
                     # if expert_j.identifier in ["sem_seg_hrnet"]:
                     #     bs_train = 90
 
                     print("Add edge [%15s To: %15s]" %
                           (expert_i.identifier, expert_j.identifier),
                           end=' ')
+
                     new_edge = Edge(config,
                                     expert_i,
                                     expert_j,
