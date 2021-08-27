@@ -105,10 +105,20 @@ class Edge:
                 dst_domain_name=expert2.domain_name,
                 analysis_logs_path=self.logs_path,
                 analysis_silent=True).to(device)
-        self.ensemble_filter = nn.DataParallel(self.ensemble_filter)
+        #self.ensemble_filter = nn.DataParallel(self.ensemble_filter)
+
+        dropout_prob = config.getfloat('Training', 'dropout_prob')
+        dropout_encoder = config.getboolean('Training', 'dropout_encoder')
+        dropout_decoder = config.getboolean('Training', 'dropout_decoder')
+
+        dropblock_prob = config.getfloat('Training', 'dropblock_prob')
+        dropblock_encoder = config.getboolean('Training', 'dropblock_encoder')
+        dropblock_decoder = config.getboolean('Training', 'dropblock_decoder')
 
         model_type = config.getint('Edge Models', 'model_type')
-        self.init_edge(expert1, expert2, device, model_type)
+        self.init_edge(expert1, expert2, device, model_type, dropout_prob,
+                       dropout_encoder, dropout_decoder, dropblock_prob,
+                       dropblock_encoder, dropblock_decoder)
 
         test1 = config.get('General', 'Steps_Iter1_test')
         test2 = config.get('General', 'Steps_Iter2_test')
@@ -237,7 +247,17 @@ class Edge:
 
         f.close()
 
-    def init_edge(self, expert1, expert2, device, model_type):
+    def init_edge(self,
+                  expert1,
+                  expert2,
+                  device,
+                  model_type,
+                  dropout_prob=0,
+                  dropout_encoder=False,
+                  dropout_decoder=False,
+                  dropblock_prob=0,
+                  dropblock_encoder=False,
+                  dropblock_decoder=False):
         self.expert1 = expert1
         self.expert2 = expert2
         self.name = "%s -> %s" % (expert1.identifier, expert2.identifier)
@@ -246,7 +266,13 @@ class Edge:
                        n_channels=expert1.no_maps_as_nn_input(),
                        n_classes=expert2.no_maps_as_nn_output(),
                        from_exp=expert1,
-                       to_exp=expert2).to(device)
+                       to_exp=expert2,
+                       dropout_prob=dropout_prob,
+                       dropout_encoder=dropout_encoder,
+                       dropout_decoder=dropout_decoder,
+                       dropblock_prob=dropblock_prob,
+                       dropblock_encoder=dropblock_encoder,
+                       dropblock_decoder=dropblock_decoder).to(device)
         self.net = nn.DataParallel(net)
 
         total_params = sum(p.numel() for p in self.net.parameters()) / 1e+6
@@ -267,6 +293,7 @@ class Edge:
         valid_ds = ImageLevelDataset(self.expert1, self.expert2, self.config,
                                      iter_no, 'VALID')
         print("\tValid ds", len(valid_ds), end=" ")
+
         self.valid_loader = DataLoader(valid_ds,
                                        batch_size=bs_test,
                                        shuffle=False,
@@ -398,13 +425,14 @@ class Edge:
             if len(losses) > 1:
                 writer.add_scalar('%s_%s/L2_Loss' % (split_tag, wtag),
                                   losses[1], self.global_step)
+            #writer.add_scalar('%s_%s/L1_vs_L2' % (split_tag, wtag), losses[0],
+            #                  losses[1])
         else:
             writer.add_scalar("%s_%s/CrossEntropy_Loss" % (split_tag, wtag),
                               losses[0], self.global_step)
 
     def train_step(self, device, writer, wtag):
         self.net.train()
-
         train_losses = torch.zeros(len(self.training_losses))
         for batch in self.train_loader:
             self.optimizer.zero_grad()
@@ -426,7 +454,6 @@ class Edge:
 
             # Optimizer
             self.optimizer.step()
-
         train_losses /= len(self.train_loader)
 
         self.log_to_tb(
@@ -767,7 +794,8 @@ class Edge:
                                                        dtype=torch.float32)
                     domain2_gt = domain2_gt.to(device=device,
                                                dtype=torch.float32)
-
+                    #import pdb
+                    #pdb.set_trace()
                     # Ensemble1Hop: 1hop preds
                     one_hop_pred = edge.net(
                         [domain1, edge.net.module.to_exp.postprocess_eval])
@@ -837,7 +865,8 @@ class Edge:
 
                 edge.log_variance_fct(domain2_1hop_ens_list, edge.var_score,
                                       edge.logs_path, 'test')
-
+                #import pdb
+                #pdb.set_trace()
                 crt_loss = edge.test_gt(
                     edge.eval_loss,
                     edge.gt_to_inp_transform(
@@ -881,7 +910,6 @@ class Edge:
         for edge in edges_1hop:
             loaders.append(iter(edge.valid_loader))
             l1_edge.append([])
-
         with torch.no_grad():
             num_batches = len(loaders[0])
             for idx_batch in tqdm(range(num_batches)):
