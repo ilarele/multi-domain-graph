@@ -80,6 +80,7 @@ def img_for_plot(img, dst_id):
         img = tasko_labels
         c = 1
     elif dst_id.find("sem_seg") >= 0:
+
         if img.shape[1] > 1:
             tasko_labels = img.argmax(dim=1, keepdim=True)
         else:
@@ -745,6 +746,7 @@ class EnsembleFilter_TwdExpert(torch.nn.Module):
         return distance_map
 
     def forward(self, data):
+
         for meanshift_iter in range(len(self.thresholds)):
             bs, n_chs, h, w, n_tasks = data.shape
             distance_maps = torch.zeros_like(data)
