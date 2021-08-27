@@ -42,7 +42,60 @@ if domain_id in [
     config.set("Edge Models", "regression_losses", "l2")
     config.set("Edge Models", "regression_losses_weights", "1")
 
-config.set("Edge Models", "model_type", "1")
+#config.set("Experts", "selector_map", "2, 12, 11")  # mdg-7
+#config.set("Experts", "selector_map", "2, 9, 10")  # mdg-5
+#config.set("Experts", "selector_map", "2, 7, 8")  # mdg-3
+#config.set("Experts", "selector_map", "0, 12, 11")  # mdg-9
+#config.set("Experts", "selector_map", "0, 9, 10")  # mdg-11
+#config.set("Experts", "selector_map", "0, 8")  # mdg-5
+
+# iter2 - v2 - twd depth
+#config.set("Experts", "selector_map", "1, 0, 2, 3")  # mdg
+#config.set("Experts", "selector_map", "1, 4, 5, 6")  # mdg-2
+#config.set("Experts", "selector_map", "1, 7, 8, 9")  # mdg-3
+#config.set("Experts", "selector_map", "1, 10, 11, 12")  # mdg-4
+#config.set("Experts", "selector_map", "1, 12")  # mdg-5
+
+# iter2 - v2 - twd normals
+#config.set("Experts", "selector_map", "2, 0, 1, 3")  # mdg-7
+#config.set("Experts", "selector_map", "2, 4, 5, 6")  # mdg-9
+#config.set("Experts", "selector_map", "2, 7, 8, 9")  # mdg-5
+#config.set("Experts", "selector_map", "2, 10, 11, 12")  # mdg-10
+
+# iter2 - v2 - twd rgb
+#config.set("Experts", "selector_map", "0, 1, 2, 3")  # mdg-12
+#config.set("Experts", "selector_map", "0, 4, 5, 6")  # mdg-6
+#config.set("Experts", "selector_map", "0, 7, 8, 9")  # mdg-8
+#config.set("Experts", "selector_map", "0, 10, 11, 12")  #mdg-11
+#config.set("Experts", "selector_map", "0, 12")  #mdg-3
+#config.set("Experts", "selector_map", "0, 6")  #mdg-9
+
+# iter2 - v3 - twd depth
+#config.set("Experts", "selector_map", "1, 0, 2, 3")  # mdg
+#config.set("Experts", "selector_map", "1, 4, 5, 6")  # mdg-2
+#config.set("Experts", "selector_map", "1, 7, 8, 9")  # mdg-3
+#config.set("Experts", "selector_map", "1, 10, 11, 12")  # mdg-4
+#config.set("Experts", "selector_map", "1, 3, 6")  # mdg
+#config.set("Experts", "selector_map", "1, 9, 11, 12")  # mdg-2
+#config.set("Experts", "selector_map", "1, 12")  # mdg
+
+# iter2 - v3 - twd normals
+#config.set("Experts", "selector_map", "2, 0, 1, 3")  # mdg-5
+#config.set("Experts", "selector_map", "2, 4, 5, 6")  # mdg-6
+#config.set("Experts", "selector_map", "2, 7, 8, 9")  # mdg-7
+#config.set("Experts", "selector_map", "2, 10, 11, 12")  # mdg-9
+#config.set("Experts", "selector_map", "2, 5, 6")  # mdg-3
+#config.set("Experts", "selector_map", "2, 8, 9, 12")  # mdg-4
+#config.set("Experts", "selector_map", "2, 12")  # mdg-3
+
+# iter2 - v3 - twd rgb
+#config.set("Experts", "selector_map", "0, 1, 2, 3")  # mdg-8
+#config.set("Experts", "selector_map", "0, 4, 5, 6")  # mdg-10
+#config.set("Experts", "selector_map", "0, 7, 8, 9")  #mdg-5
+#config.set("Experts", "selector_map", "0, 10, 11, 12")  #mdg-6
+config.set("Experts", "selector_map", "0, 12")  # mdg-3
+
+#config.set("Edge Models", "model_type", "1")
 
 tensorboard_prefix = config.get("Logs", "tensorboard_prefix")
 config.set("Logs", "tensorboard_prefix",
