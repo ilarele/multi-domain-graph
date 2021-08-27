@@ -170,8 +170,7 @@ def process_data(domains, in_paths, out_path):
 #process_data(exp_domains, exp_in_paths, exp_out_path)
 
 if __name__ == '__main__':
-    import pdb
-    pdb.set_trace()
+
     # get paths of original data
     orig_train1_paths = get_original_paths(dataset_path, csv_path, 'train1',
                                            'final_preview', 'tonemap', 'jpg')
@@ -194,8 +193,7 @@ if __name__ == '__main__':
                                          'final_preview', 'tonemap', 'jpg')
     valid_paths = get_v2_task_split_paths(dataset_path, csv_path, 'valid',
                                           'final_preview', 'tonemap', 'jpg')
-    import pdb
-    pdb.set_trace()
+
     print('orig train1 -- %d' % len(orig_train1_paths))
     print('orig train2 -- %d' % len(orig_train2_paths))
     print('orig train3 -- %d' % len(orig_train3_paths))
@@ -204,8 +202,7 @@ if __name__ == '__main__':
     print('train2 -- %d' % len(train2_paths))
     print('test -- %d' % len(test_paths))
     print('valid -- %d' % len(valid_paths))
-    import pdb
-    pdb.set_trace()
+
     # get indexes of train
     train1_split_indexes, train1_frames_indexes = get_original_indexes(
         train1_paths,
@@ -222,8 +219,6 @@ if __name__ == '__main__':
     print('train2 -- %d' % len(train2_split_indexes))
     print('test -- %d' % len(test_split_indexes))
     print('valid -- %d' % len(valid_split_indexes))
-    import pdb
-    pdb.set_trace()
 
     gt_out_path = '/data/multi-domain-graph-5/datasets/datasets_preproc_gt/hypersim_v2'
     exp_out_path = '/data/multi-domain-graph-5/datasets/datasets_preproc_exp/hypersim_v2'
@@ -245,10 +240,9 @@ if __name__ == '__main__':
     exp_domains = [
         'cartoon_wb', 'depth_n_1_xtc', 'edges_dexined', 'normals_xtc',
         'sem_seg_hrnet', 'sobel_large', 'sobel_small', 'sobel_medium',
-        'superpixel_fcn'
+        'superpixel_fcn', 'sem_seg_hrnet_v2'
     ]
-    import pdb
-    pdb.set_trace()
+
     if sys.argv[1] == 'gt':
         print('GT')
         process_data([sys.argv[2]], gt_in_paths, gt_out_path)

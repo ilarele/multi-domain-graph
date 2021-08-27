@@ -17,6 +17,21 @@ ss_model_path = os.path.join(current_dir_name, 'models/')
 # ADE20k labels https://github.com/CSAILVision/sceneparsing/blob/master/objectInfo150.csv
 # Taskonomy labels https://github.com/StanfordVL/taskonomy/blob/master/taskbank/assets/web_assets/pseudosemantics/coco_selected_classes.txt
 
+ADE20k_2_NYU19 = np.array([
+    1, 19, 19, 2, 19, 14, 19, 4, 8, 19, 3, 19, 19, 19, 7, 6, 19, 15, 11, 5, 19,
+    19, 10, 4, 9, 19, 19, 10, 13, 19, 5, 5, 19, 6, 19, 3, 18, 17, 19, 12, 3,
+    15, 1, 19, 3, 6, 19, 17, 19, 19, 16, 19, 19, 19, 19, 9, 6, 12, 7, 19, 19,
+    19, 9, 16, 6, 17, 15, 15, 19, 19, 6, 16, 15, 6, 16, 5, 19, 6, 19, 19, 19,
+    12, 18, 19, 19, 18, 19, 19, 19, 16, 19, 19, 12, 19, 19, 19, 19, 12, 15, 6,
+    10, 19, 19, 19, 19, 19, 19, 16, 15, 19, 5, 19, 15, 19, 19, 15, 19, 19, 16,
+    15, 15, 19, 19, 19, 16, 15, 19, 19, 19, 16, 16, 12, 15, 16, 18, 15, 19, 19,
+    19, 16, 19, 16, 15, 16, 19, 17, 16, 15, 15, 19
+])
+NYU40_2_NYU19 = np.array([
+    1, 2, 3, 4, 5, 4, 6, 7, 8, 9, 10, 6, 11, 6, 9, 11, 3, 12, 10, 13, 12, 14,
+    15, 16, 16, 15, 12, 11, 15, 10, 19, 3, 17, 17, 18, 17, 15, 19, 19, 19
+])
+
 all_classes_occurences_ade = [
     (0.0, 549870074), (5.0, 196085021), (3.0, 130539277), (14.0, 57923488),
     (8.0, 41506029), (10.0, 38603593), (23.0, 18925060), (38.0, 15416607),
@@ -155,6 +170,185 @@ def analyze_cls():
         if total_occ > 93:
             break
     print("w_times", w_times)
+
+
+class SSegHRNet_v2(BasicExpert):
+    def __init__(self, dataset_name, full_expert=True):
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = device
+        if full_expert:
+            self.trained_num_class = 150
+            # Network Builders
+            self.encoder = ModelBuilder.build_encoder(
+                arch="hrnetv2",
+                fc_dim=720,
+                weights="%s/hrnet_encoder_epoch_30.pth" % ss_model_path)
+            self.decoder = ModelBuilder.build_decoder(
+                arch="c1",
+                fc_dim=720,
+                num_class=self.trained_num_class,
+                weights="%s/hrnet_decoder_epoch_30.pth" % ss_model_path,
+                use_softmax=True)
+
+            self.encoder.eval()
+            self.decoder.eval()
+
+            self.encoder.to(device)
+            self.decoder.to(device)
+        if dataset_name == "taskonomy":
+            weights = [
+                0.03933823, 0.11031396, 0.16570427, 0.3632622, 0.52115117,
+                0.51646098, 1.14297737, 0.96902266, 1.31444027, 1.76809316,
+                1.89247963, 1.1967561
+            ]
+            self.classes_weights = torch.tensor(weights).to(self.device)
+        else:
+            self.classes_weights = None
+
+        if dataset_name == "hypersim":
+            self.exp_annotations_2_common_annotations = torch.tensor(
+                ADE20k_2_NYU19).long().cuda()
+            self.gt_annotations_2_common_annotations = torch.tensor(
+                NYU40_2_NYU19).long().cuda()
+            self.n_obj_classes = 20
+        else:
+            self.exp_annotations_2_common_annotations = None
+            self.gt_annotations_2_common_annotations = None
+            self.n_obj_classes = 10
+
+        self.domain_name = "sem_seg"
+        self.n_maps = 1
+        self.n_final_maps = self.n_obj_classes
+
+        self.str_id = "hrnet_v2"
+        self.identifier = self.domain_name + "_" + self.str_id
+
+    def apply_expert_batch(self, batch_rgb_frames):
+        with torch.no_grad():
+            batch_rgb_frames = batch_rgb_frames.permute(0, 3, 1, 2) / 255.
+            sseg_maps = self.decoder(self.encoder(batch_rgb_frames.to(
+                self.device),
+                                                  return_feature_maps=True),
+                                     segSize=256)
+
+            class_labels = sseg_maps.argmax(dim=1, keepdim=True)
+            class_labels = self.exp_annotations_2_common_annotations[
+                class_labels] - 1
+
+            class_labels = np.array(
+                class_labels.data.cpu().numpy()).astype('long')
+        return class_labels
+
+    def get_task_type(self):
+        return BasicExpert.TASK_CLASSIFICATION
+
+    def no_maps_as_nn_input(self):
+        return 1
+
+    def no_maps_as_nn_output(self):
+        return self.n_final_maps
+
+    def no_maps_as_ens_input(self):
+        return self.n_final_maps
+
+    def gt_train_transform(self, gt_maps):
+        # TODO check this
+        return gt_maps.squeeze(1).long()
+
+    def gt_eval_transform(self, gt_maps):
+        # TODO check this
+        return gt_maps.squeeze(1).long()
+
+    def gt_to_inp_transform(self, inp_1chan_cls, n_classes):
+        inp_1chan_cls = inp_1chan_cls.squeeze(1).long()
+        bs, h, w = inp_1chan_cls.shape
+
+        outp_multichan = torch.zeros(
+            (bs, n_classes, h, w)).to(inp_1chan_cls.device).float()
+        for chan in range(n_classes):
+            outp_multichan[:, chan][inp_1chan_cls == chan] = 1.
+        return outp_multichan
+
+    def test_gt(self, loss_fct, pred, target):
+        # TODO check this
+        return 0
+
+    '''
+    def test_gt(self, loss_fct, pred, target):
+
+        loss_fct = nn.L1Loss(reduction="none")
+        NYU_2_ADE = np.array([
+            0, 1, 3, 6, 10, 12, 7, 9, 4, 5, 0, 11, 0, 0, 0, 0, 0, 6, 0, 0, 0,
+            0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ])
+        #pred = torch.argmax(pred, dim=1, keepdim=True)[:, 0, :, :]
+        #pred = pred + 1
+
+        target = target.long()
+        transf = torch.tensor(NYU_2_ADE).cuda()
+        target = transf[target].float()
+        target = target - 1
+        #target[target < 0] = 0
+
+        # daca folosim L1
+        bs, h, w = target.shape
+        n_classes = pred.shape[1]
+        outp_multichan = torch.zeros(
+            (bs, n_classes, h, w)).to(target.device).float()
+        for chan in range(n_classes):
+            outp_multichan[:, chan][target == chan] = 1.
+        #import pdb
+        #pdb.set_trace()
+        #loss = loss_fct(pred, target)
+        loss = loss_fct(pred, outp_multichan)
+        #loss = torch.sum(loss, dim=1)
+        return loss
+    '''
+    '''
+    def get_iou(self, m1, m2):
+        s_inter = torch.sum(m1[:, :, :] * m2[:, :, :], (1, 2))
+        s_1 = torch.sum(m1[:, :, :], (1, 2))
+        s_2 = torch.sum(m2[:, :, :], (1, 2))
+        d = s_1 + s_2 - s_inter
+        d[d == 0] = 1
+        iou = s_inter / d  #(s_1 + s_2 - s_inter)
+        return iou
+
+    def test_gt(self, loss_fct, pred, target):
+        #import pdb
+        #pdb.set_trace()
+        loss_fct = nn.L1Loss(reduction="none")
+        NYU_2_ADE = np.array([
+            0, 1, 3, 6, 10, 12, 7, 9, 4, 5, 0, 11, 0, 0, 0, 0, 0, 6, 0, 0, 0,
+            0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ])
+        pred = torch.argmax(pred, dim=1, keepdim=True)[:, 0, :, :]
+        pred = pred + 1
+
+        target = target.long()
+        transf = torch.tensor(NYU_2_ADE).cuda()
+        target = transf[target].float()
+
+        all_ious = torch.zeros(pred.shape[0]).cuda()
+        for cls_idx in np.arange(1, 12):
+            target_mask = target == cls_idx
+            pred_mask = pred == cls_idx
+            iou = self.get_iou(target_mask, pred_mask)
+            all_ious = all_ious + iou
+        all_ious = all_ious / 12
+        loss = all_ious  #self.get_iou(target_mask, pred_mask)
+        loss = loss[:, None, None]
+        loss = loss.repeat(1, 256, 256)
+        return loss
+    '''
+
+    def postprocess_eval(self, nn_outp):
+        '''
+        POST PROCESSING eval - posprocess operations for evaluation (e.g. scale/normalize)
+        '''
+        f = torch.nn.Softmax(dim=1)
+        nn_outp = f(nn_outp)
+        return nn_outp  #nn_outp.clamp(min=0, max=1)
 
 
 class SSegHRNet(BasicExpert):
@@ -342,8 +536,6 @@ class SSegHRNet(BasicExpert):
         '''
         f = torch.nn.Softmax(dim=1)
         nn_outp = f(nn_outp)
-        #import pdb
-        #pdb.set_trace()
         return nn_outp  #nn_outp.clamp(min=0, max=1)
 
 

@@ -60,6 +60,7 @@ VALID_EXPERTS_NAME = [\
     'sobel_medium',
     'sobel_large',
     'sem_seg_hrnet',
+    'sem_seg_hrnet_v2',
     'normals_no_alt_xtc'
                       ]
 
@@ -446,6 +447,10 @@ def get_expert(exp_name):
         #import experts.semantic_segmentation_expert
         return experts.semantic_segmentation_expert.SSegHRNet(
             dataset_name='hypersim', full_expert=True)
+    elif exp_name == 'sem_seg_hrnet_v2':
+        import experts.semantic_segmentation_expert
+        return experts.semantic_segmentation_expert.SSegHRNet_v2(
+            dataset_name='hypersim', full_expert=True)
 
     return None
 
@@ -500,6 +505,7 @@ def get_exp_results():
         else:
             add_process_fct = lambda x: x
         file_idx = 0
+
         for batch in tqdm(dataloader):
             exp_info, paths = batch
             exp_info = process_fct(exp_info)
