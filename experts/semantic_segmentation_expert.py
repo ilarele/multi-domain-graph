@@ -268,6 +268,84 @@ class SSegHRNet(BasicExpert):
             outp_multichan[:, chan][inp_1chan_cls == chan] = 1.
         return outp_multichan
 
+    def test_gt(self, loss_fct, pred, target):
+
+        loss_fct = nn.L1Loss(reduction="none")
+        NYU_2_ADE = np.array([
+            0, 1, 3, 6, 10, 12, 7, 9, 4, 5, 0, 11, 0, 0, 0, 0, 0, 6, 0, 0, 0,
+            0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ])
+        #pred = torch.argmax(pred, dim=1, keepdim=True)[:, 0, :, :]
+        #pred = pred + 1
+
+        target = target.long()
+        transf = torch.tensor(NYU_2_ADE).cuda()
+        target = transf[target].float()
+        target = target - 1
+        #target[target < 0] = 0
+
+        # daca folosim L1
+        bs, h, w = target.shape
+        n_classes = pred.shape[1]
+        outp_multichan = torch.zeros(
+            (bs, n_classes, h, w)).to(target.device).float()
+        for chan in range(n_classes):
+            outp_multichan[:, chan][target == chan] = 1.
+        #import pdb
+        #pdb.set_trace()
+        #loss = loss_fct(pred, target)
+        loss = loss_fct(pred, outp_multichan)
+        #loss = torch.sum(loss, dim=1)
+        return loss
+
+    '''
+    def get_iou(self, m1, m2):
+        s_inter = torch.sum(m1[:, :, :] * m2[:, :, :], (1, 2))
+        s_1 = torch.sum(m1[:, :, :], (1, 2))
+        s_2 = torch.sum(m2[:, :, :], (1, 2))
+        d = s_1 + s_2 - s_inter
+        d[d == 0] = 1
+        iou = s_inter / d  #(s_1 + s_2 - s_inter)
+        return iou
+
+    def test_gt(self, loss_fct, pred, target):
+        #import pdb
+        #pdb.set_trace()
+        loss_fct = nn.L1Loss(reduction="none")
+        NYU_2_ADE = np.array([
+            0, 1, 3, 6, 10, 12, 7, 9, 4, 5, 0, 11, 0, 0, 0, 0, 0, 6, 0, 0, 0,
+            0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ])
+        pred = torch.argmax(pred, dim=1, keepdim=True)[:, 0, :, :]
+        pred = pred + 1
+
+        target = target.long()
+        transf = torch.tensor(NYU_2_ADE).cuda()
+        target = transf[target].float()
+
+        all_ious = torch.zeros(pred.shape[0]).cuda()
+        for cls_idx in np.arange(1, 12):
+            target_mask = target == cls_idx
+            pred_mask = pred == cls_idx
+            iou = self.get_iou(target_mask, pred_mask)
+            all_ious = all_ious + iou
+        all_ious = all_ious / 12
+        loss = all_ious  #self.get_iou(target_mask, pred_mask)
+        loss = loss[:, None, None]
+        loss = loss.repeat(1, 256, 256)
+        return loss
+    '''
+
+    def postprocess_eval(self, nn_outp):
+        '''
+        POST PROCESSING eval - posprocess operations for evaluation (e.g. scale/normalize)
+        '''
+        f = torch.nn.Softmax(dim=1)
+        nn_outp = f(nn_outp)
+        #import pdb
+        #pdb.set_trace()
+        return nn_outp  #nn_outp.clamp(min=0, max=1)
+
 
 class SSegResNeSt(BasicExpert):
     def __init__(self, full_expert=True):

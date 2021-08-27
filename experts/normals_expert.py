@@ -21,6 +21,7 @@ class SurfaceNormalsXTC(BasicExpert):
     def __init__(self, dataset_name, full_expert=True, no_alt=False):
         '''
             dataset_name: "taskonomy" or "replica"
+            no_alt: if True -> we keep the last channel 
         '''
         if full_expert:
             #         from tensorflow.python.keras.utils.generic_utils import \
@@ -124,6 +125,20 @@ class SurfaceNormalsXTC(BasicExpert):
         else:
             l_pred = pred
             l_target = target
+
+        #import pdb
+        #pdb.set_trace()
+
+        #filter = torch.nn.Conv2d(in_channels=l_target.shape[1],
+        #                         out_channels=l_target.shape[1],
+        #                         kernel_size=11,
+        #                         padding=5,
+        #                         groups=l_target.shape[1],
+        #                         bias=False)
+        #filter.weight.data = torch.ones((filter.weight.data.shape)) / (11 * 11)
+        #filter.weight.requires_grad = False
+        #filter = filter.cuda()
+        #l_target = filter(l_target)
 
         loss = loss_fct(l_pred, l_target)
         return loss
