@@ -1,0 +1,3 @@
+nohup python launch_config_save.py sobel_large hypersim_v2_template_save_iter1_v3.ini > logs_hypersim_v2_save_iter1_v3_sobel_large.out &
+wait 
+nohup python launch_config_save.py sobel_medium hypersim_v2_template_save_iter1_v3.ini > logs_hypersim_v2_save_iter1_v3_sobel_medium.out &

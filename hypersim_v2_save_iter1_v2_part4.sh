@@ -1,0 +1,7 @@
+nohup python launch_config_save.py sobel_large hypersim_v2_template_save_iter1_v2.ini > logs_hypersim_v2_save_iter1_v2_sobel_large.out &
+wait 
+nohup python launch_config_save.py sobel_medium hypersim_v2_template_save_iter1_v2.ini > logs_hypersim_v2_save_iter1_v2_sobel_medium.out &
+wait 
+nohup python launch_config_save.py sobel_small hypersim_v2_template_save_iter1_v2.ini > logs_hypersim_v2_save_iter1_v2_sobel_small.out &
+wait 
+nohup python launch_config_save.py superpixel_fcn hypersim_v2_template_save_iter1_v2.ini > logs_hypersim_v2_save_iter1_v2_superpixel_fcn.out &

@@ -1,0 +1,5 @@
+nohup python launch_config_save.py edges_dexined hypersim_v2_template_save_iter1_v2.ini > logs_hypersim_v2_save_iter1_v2_edges_dexined.out &
+wait 
+nohup python launch_config_save.py halftone_gray hypersim_v2_template_save_iter1_v2.ini > logs_hypersim_v2_save_iter1_v2_halftone_gray.out &
+wait 
+nohup python launch_config_save.py sem_seg_hrnet hypersim_v2_template_save_iter1_v2.ini > logs_hypersim_v2_save_iter1_v2_sem_seg_hrnet.out &

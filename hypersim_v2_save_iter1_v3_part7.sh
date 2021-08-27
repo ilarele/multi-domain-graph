@@ -1,0 +1,1 @@
+nohup python launch_config_save.py sem_seg_hrnet hypersim_v2_template_save_iter1_v3.ini > logs_hypersim_v2_save_iter1_v3_sem_seg_hrnet.out &

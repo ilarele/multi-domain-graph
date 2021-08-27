@@ -1,0 +1,5 @@
+nohup python launch_config_train_hypersim.py halftone_gray hypersim_v2_template_iter1_train_39.ini > logs_hypersim_v2_train_39_halftone_gray.out &
+wait 
+nohup python launch_config_train_hypersim.py sem_seg_hrnet hypersim_v2_template_iter1_train_39.ini > logs_hypersim_v2_train_39_sem_seg_hrnet.out &
+wait
+nohup python launch_config_train_hypersim.py grayscale hypersim_v2_template_iter1_train_39.ini > logs_hypersim_v2_train_39_grayscale.out &

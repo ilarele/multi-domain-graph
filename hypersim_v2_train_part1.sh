@@ -1,0 +1,5 @@
+nohup python launch_config_train_hypersim.py rgb hypersim_v2_template_iter1_train_39.ini > logs_hypersim_v2_train_39_rgb.out &
+wait
+nohup python launch_config_train_hypersim.py depth_n_1_xtc hypersim_v2_template_iter1_train_39.ini > logs_hypersim_v2_train_39_depth_n_1_xtc.out &
+wait
+nohup python launch_config_train_hypersim.py edges_dexined hypersim_v2_template_iter1_train_39.ini > logs_hypersim_v2_train_39_edges_dexined.out &

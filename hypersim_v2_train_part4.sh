@@ -1,0 +1,5 @@
+nohup python launch_config_train_hypersim.py sobel_medium hypersim_v2_template_iter1_train_39.ini > logs_hypersim_v2_train_39_sobel_medium.out &
+wait 
+nohup python launch_config_train_hypersim.py sobel_small hypersim_v2_template_iter1_train_39.ini > logs_hypersim_v2_train_39_sobel_small.out &
+wait
+nohup python launch_config_train_hypersim.py superpixel_fcn hypersim_v2_template_iter1_train_39.ini > logs_hypersim_v2_train_39_superpixel_fcn.out &

@@ -1,0 +1,5 @@
+nohup python launch_config_train_hypersim.py hsv hypersim_v2_template_iter1_train_39.ini > logs_hypersim_v2_train_39_hsv.out &
+wait 
+nohup python launch_config_train_hypersim.py cartoon_wb hypersim_v2_template_iter1_train_39.ini > logs_hypersim_v2_train_39_cartoon_wb.out &
+wait
+nohup python launch_config_train_hypersim.py sobel_large hypersim_v2_template_iter1_train_39.ini > logs_hypersim_v2_train_39_sobel_large.out &
