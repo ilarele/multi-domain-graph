@@ -14,7 +14,7 @@ logs_out_path = r'/data/multi-domain-graph-6/datasets/hypersim/runs'
 experts_path = r'/data/multi-domain-graph-5/datasets/datasets_preproc_exp/hypersim'
 gt_path = r'/data/multi-domain-graph-5/datasets/datasets_preproc_gt/hypersim'
 
-split_name = 'train1'
+split_name = 'valid'
 n_samples = 1000
 
 experts_path = os.path.join(experts_path, split_name)
@@ -48,11 +48,12 @@ writer = SummaryWriter(
 for idx in indexes:
     exps = []
     for exp in all_experts:
-        if exp == 'sem_seg_hrnet':
-            import pdb
-            pdb.set_trace()
         path = os.path.join(experts_path, exp, '%08d.npy' % idx)
         v = torch.from_numpy(np.load(path))
+        if exp == 'sem_seg_hrnet_v2':
+            v = (v / 18)
+        elif exp == 'sem_seg_hrnet':
+            v = (v / 11)
         img_grid = torchvision.utils.make_grid(v[None], 1)
         exps.append(img_grid)
         #img_grid = torchvision.utils.make_grid(v[None], 1)
@@ -63,6 +64,8 @@ for idx in indexes:
     for gt in all_gts:
         path = os.path.join(gt_path, gt, '%08d.npy' % idx)
         v = torch.from_numpy(np.load(path))
+        if gt == 'sem_seg':
+            v = v / 40
         img_grid = torchvision.utils.make_grid(v[None], 1)
         gts.append(img_grid)
         #img_grid = torchvision.utils.make_grid(v[None], 1)
