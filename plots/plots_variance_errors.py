@@ -5,13 +5,14 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 
 csv_path = 'variance_logs.csv'
 fig_path = 'variance_logs.svg'
 
 #colors = ['#488f31', '#de425b']
 #colors = ['#003f5c', '#ffa600']
-colors = ['#58508d', '#ff6361']
+colors = ['#ff6361', '#58508d']
 
 df = pd.read_csv(csv_path)
 
@@ -22,8 +23,6 @@ df['Iteration'] = df['Iteration'].astype(str)
 metrics = ['normalized variance', 'normalized average L1 scores']
 datas = ['variance_without_exp', 'errors']
 
-import pdb
-pdb.set_trace()
 dfs = []
 df.loc[df['Destination node'] == 'normals', 'errors']
 for dom in ['depth', 'normals']:
@@ -48,7 +47,7 @@ fig, ax = plt.subplots(nrows=1,
                        figsize=(6 * len(metrics), 5),
                        sharex=False)
 fig.suptitle(r'Analysis of ensemble edges',
-             fontsize=17.5,
+             fontsize=30,
              y=1,
              fontweight='bold')
 sns.set()
@@ -77,18 +76,24 @@ for i in range(len(metrics)):
                            bbox_to_anchor=(0, -0.35),
                            frameon=True,
                            handlelength=2.5,
-                           fontsize=17.5)
+                           fontsize=27.5)
         for legobj in leg.legendHandles:
             legobj.set_linewidth(3.0)
-    ax[i].tick_params(axis='x', labelsize=15)
-    ax[i].tick_params(axis='y', labelsize=15)
+    ax[i].tick_params(axis='x', labelsize=25)
+    ax[i].tick_params(axis='y', labelsize=25)
     #ax[i].set_ylabel('%s L1' % domains[i], size=15)
-    ax[i].set_ylabel('', size=17.5)
-    ax[i].set_xlabel('epoch', fontsize=17.5)
+    #if i == 0:
+    if i == 0:
+        ax[i].set_ylabel(metrics[i], size=27.5)
+    else:
+        ax[i].set_ylabel('normalized average \n L1 score', size=27.5)
+    ax[i].set_xlabel('epoch', fontsize=27.5)
     #ax[i].set_title('%s' % metrics[i], size=15)
-    ax[i].set_title(metrics[i], size=17.5)
+    #ax[i].set_title(metrics[i], size=27.5)
     #'Average per-pixel variance of edges \nreaching the same destination node',
     #size=15)
+    ax[i].yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+    #ax[i].xaxis.set_major_formatter(FormatStrFormatter('%.0f'))
 
 plt.savefig(fig_path, bbox_inches='tight', dpi=300)
 plt.close()

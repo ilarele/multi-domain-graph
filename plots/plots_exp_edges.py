@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 
 csv_path = 'replica_edges_analysis.csv'
 fig_path = 'replica_exp_edges.svg'
@@ -30,13 +31,14 @@ domains = ['depth', 'normals']
 #                       sharex=False)
 fig, ax = plt.subplots(nrows=1,
                        ncols=len(domains),
-                       figsize=(6 * len(domains), 5),
+                       figsize=(6 * len(domains), 6),
                        sharex=False)
 fig.suptitle(
-    'Evolution of L1 score considering different node selection strategies',
-    fontsize=17.5,
-    y=1,
+    'Evolution of L1 score considering different \n node selection strategies',
+    fontsize=30,
+    y=1.1,
     fontweight='bold')
+#fig.tight_layout(pad=1.0)
 sns.set()
 sns.set_style('white')
 sns.set_context('paper')
@@ -64,15 +66,17 @@ for i in range(len(domains)):
                            bbox_to_anchor=(0, -0.35),
                            frameon=True,
                            handlelength=2.5,
-                           fontsize=17.5)
+                           fontsize=27.5)
         for legobj in leg.legendHandles:
             legobj.set_linewidth(3.0)
-    ax[i].tick_params(axis='x', labelsize=15)
-    ax[i].tick_params(axis='y', labelsize=15)
+    ax[i].tick_params(axis='x', labelsize=25)
+    ax[i].tick_params(axis='y', labelsize=25)
     #ax[i].set_ylabel('%s L1' % domains[i], size=15)
-    ax[i].set_ylabel('', size=15)
-    ax[i].set_xlabel('number of nodes', fontsize=17.5)
-    ax[i].set_title('$%s$' % domains[i], size=17.5)
+    ax[i].set_ylabel('L1', size=27.5)
+    ax[i].set_xlabel('number of nodes', fontsize=27.5)
+    ax[i].set_title('$%s$' % domains[i], size=27.5)
+    ax[i].yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+    ax[i].xaxis.set_major_formatter(FormatStrFormatter('%.0f'))
 
 plt.savefig(fig_path, bbox_inches='tight', dpi=300)
 plt.close()

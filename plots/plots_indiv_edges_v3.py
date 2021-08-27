@@ -64,9 +64,9 @@ fig, ax = plt.subplots(nrows=1,
                        ncols=len(domains),
                        figsize=(6 * len(domains), 5),
                        sharex=False)
-fig.suptitle('Relative L1 improvement (%) of edges between iterations',
-             fontsize=17.5,
-             y=1,
+fig.suptitle('Relative L1 improvement (%)\n of edges between iterations',
+             fontsize=30,
+             y=1.15,
              fontweight='bold')
 sns.set()
 sns.set_style('white')
@@ -93,12 +93,12 @@ for i in range(len(domains)):
                         y='L1',
                         palette=[colors[i]],
                         ax=ax[i])
-    ax[i].tick_params(axis='x', labelsize=15, rotation=90)
-    ax[i].tick_params(axis='y', labelsize=15)
+    ax[i].tick_params(axis='x', labelsize=25, rotation=90)
+    ax[i].tick_params(axis='y', labelsize=25)
     #ax[i].set_xlabel('source node' % domains[i], size=15)
-    ax[i].set_xlabel('', size=17.5)
-    ax[i].set_ylabel('', fontsize=17.5)
-    ax[i].set_title(r'Edges $\rightarrow %s$' % domain, size=17.5)
+    ax[i].set_xlabel('', size=27.5)
+    ax[i].set_ylabel('L1 improvement (%)', fontsize=27.5)
+    ax[i].set_title(r'Edges $\rightarrow %s$' % domain, size=27.5)
 
 plt.savefig(fig_path, bbox_inches='tight', dpi=300)
 plt.close()
